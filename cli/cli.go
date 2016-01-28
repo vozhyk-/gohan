@@ -120,6 +120,10 @@ CONFIGURATION:
 `,
 		Action: func(c *cli.Context) {
 			opts, err := client.NewOptsFromEnv()
+			if err != nil {
+				util.ExitFatal(err)
+			}
+
 			gohanCLI, err := client.NewGohanClientCLI(opts)
 			if err != nil {
 				util.ExitFatalf("Error initializing Gohan Client CLI: %v\n", err)
@@ -132,7 +136,7 @@ CONFIGURATION:
 			}
 			result, err := gohanCLI.ExecuteCommand(command, arguments)
 			if err != nil {
-				util.ExitFatalf("%v\n", err)
+				util.ExitFatal(err)
 			}
 			if result == "null" {
 				result = ""
