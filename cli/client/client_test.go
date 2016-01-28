@@ -115,6 +115,20 @@ var _ = Describe("CLI functions", func() {
 			Expect(opts).To(BeNil())
 			Expect(err).To(HaveOccurred())
 		})
+
+		It("Should show error - error parsing GOHAN_OUTPUT_FORMAT", func() {
+			os.Setenv("GOHAN_OUTPUT_FORMAT", "<null>")
+			opts, err := NewOptsFromEnv()
+			Expect(opts).To(BeNil())
+			Expect(err).To(HaveOccurred())
+		})
+
+		It("Should show error - error parsing GOHAN_VERBOSITY", func() {
+			os.Setenv("GOHAN_VERBOSITY", "<null>")
+			opts, err := NewOptsFromEnv()
+			Expect(opts).To(BeNil())
+			Expect(err).To(HaveOccurred())
+		})
 	})
 
 	Describe("GohanClientCLI constructor", func() {

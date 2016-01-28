@@ -113,6 +113,8 @@ CONFIGURATION:
         * Should Client cache schemas (default - true) - GOHAN_CACHE_SCHEMAS
         * Cache expiration time (in format 1h20m10s - default 5m) - GOHAN_CACHE_TIMEOUT
         * Cache path (default - /tmp/.cached-gohan-schemas) - GOHAN_CACHE_PATH
+        * In which format results should be shown, see --output-format - GOHAN_OUTPUT_FORMAT
+        * How much debug info Gohan Client should show, see --verbosity - GOHAN_VERBOSITY
     Additional options for Keystone v3 only:
         * Keystone domain name or domain id - OS_DOMAIN_NAME or OS_DOMAIN_ID
 `,
