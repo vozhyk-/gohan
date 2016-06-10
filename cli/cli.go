@@ -323,6 +323,9 @@ Run extensions tests in a gohan-server-like environment.
 
 Test files and directories can be supplied as arguments. See Gohan
 documentation for detail information about writing tests.`,
+		Flags: []cli.Flag{
+			cli.BoolFlag{Name: "verbose, v", Usage: "Print logs for passing tests"},
+		},
 		Action: framework.RunTests,
 	}
 }

@@ -22,6 +22,8 @@ import (
 	"path/filepath"
 	"regexp"
 
+	"github.com/cloudwan/gohan/extension/framework/buflog"
+
 	"github.com/dop251/otto"
 	"github.com/robertkrimen/otto/ast"
 	"github.com/robertkrimen/otto/parser"
@@ -39,8 +41,10 @@ type metaError struct {
 // TestRunner abstracts running extension tests from a single file
 type TestRunner struct {
 	testFileName string
-	setUp        bool
-	tearDown     bool
+	printAllLogs bool
+
+	setUp    bool
+	tearDown bool
 }
 
 var setUpPattern = regexp.MustCompile("^setUp$")
@@ -48,9 +52,10 @@ var tearDownPattern = regexp.MustCompile("^tearDown$")
 var testPattern = regexp.MustCompile("^test.*")
 
 // NewTestRunner creates a new test runner for a given test file
-func NewTestRunner(testFileName string) *TestRunner {
+func NewTestRunner(testFileName string, printAllLogs bool) *TestRunner {
 	return &TestRunner{
 		testFileName: testFileName,
+		printAllLogs: printAllLogs,
 	}
 }
 
@@ -99,6 +104,7 @@ func (runner *TestRunner) Run() map[string]error {
 	errors := map[string]error{}
 	for _, test := range tests {
 		errors[test] = runner.runTest(test, env)
+
 		if _, ok := errors[test].(metaError); ok {
 			return map[string]error{
 				GeneralError: errors[test],
@@ -110,6 +116,20 @@ func (runner *TestRunner) Run() map[string]error {
 }
 
 func (runner *TestRunner) runTest(testName string, env *Environment) (err error) {
+	if !runner.printAllLogs {
+		buflog.Buf().Activate()
+		defer func() {
+			if err != nil {
+				buflog.Buf().PrintLogs()
+			}
+			buflog.Buf().Deactivate()
+		}()
+	}
+
+	defer func() {
+		runner.printTestResult(testName, err)
+	}()
+
 	err = env.InitializeEnvironment()
 	if err != nil {
 		return metaError{err}
@@ -153,4 +173,14 @@ func (runner *TestRunner) runTest(testName string, env *Environment) (err error)
 		err = mockError
 	}
 	return
+}
+
+func (runner *TestRunner) printTestResult(testName string, testErr error) {
+	if testErr != nil {
+		log.Error(fmt.Sprintf("\t FAIL (%s:%s): %s",
+			runner.testFileName, testName, testErr.Error()))
+	} else {
+		log.Notice("\t PASS (%s:%s)",
+			runner.testFileName, testName)
+	}
 }

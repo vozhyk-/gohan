@@ -21,6 +21,7 @@ import (
 	"path/filepath"
 	"regexp"
 
+	"github.com/cloudwan/gohan/extension/framework/buflog"
 	"github.com/cloudwan/gohan/extension/framework/runner"
 	"github.com/codegangsta/cli"
 	logging "github.com/op/go-logging"
@@ -28,26 +29,14 @@ import (
 
 var log = logging.MustGetLogger("extest")
 
-func setUpLogging() {
-	backend := logging.NewLogBackend(os.Stderr, "", 0)
-	format := logging.MustStringFormatter(
-		"%{color}%{time:15:04:05.000}: %{module} %{level} %{color:reset} %{message}")
-	backendFormatter := logging.NewBackendFormatter(backend, format)
-	leveledBackendFormatter := logging.AddModuleLevel(backendFormatter)
-	leveledBackendFormatter.SetLevel(logging.CRITICAL, "")
-	leveledBackendFormatter.SetLevel(logging.DEBUG, "extest")
-	logging.SetBackend(leveledBackendFormatter)
-}
-
 // RunTests runs extension tests when invoked from Gohan CLI
 func RunTests(c *cli.Context) {
-	setUpLogging()
+	buflog.SetUpDefaultLogging()
 
 	testFiles := getTestFiles(c.Args())
 	summary := map[string]error{}
 	for _, testFile := range testFiles {
-		log.Info("Running tests from '%s':", testFile)
-		testRunner := runner.NewTestRunner(testFile)
+		testRunner := runner.NewTestRunner(testFile, c.Bool("verbose"))
 		errors := testRunner.Run()
 		if err, ok := errors[runner.GeneralError]; ok {
 			summary[testFile] = fmt.Errorf("%s", err.Error())
@@ -56,12 +45,9 @@ func RunTests(c *cli.Context) {
 		}
 
 		failed := 0
-		for test, err := range errors {
+		for _, err := range errors {
 			if err != nil {
-				failed = failed + 1
-				log.Error(fmt.Sprintf("\t FAIL (%s): %s", test, err.Error()))
-			} else if c.Bool("verbose") {
-				log.Notice("\t PASS (%s)", test)
+				failed++
 			}
 		}
 		summary[testFile] = nil
