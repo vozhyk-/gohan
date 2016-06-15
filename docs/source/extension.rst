@@ -482,11 +482,11 @@ Event
 Testing javascript extensions
 -----------------------------
 
-You can test extensions using a testing tool bundled with Gohan through new
-command ``testextensions`` (or simply ``te``). Build and install Gohan, then
-run ``gohan testextensions <paths to files/directories to test>``. The
-framework will walk through files and recursively through directories, matching
-files named ``test_.*.js`` and running tests.
+You can test extensions using a testing tool bundled with Gohan with the command
+``test_extensions`` (or ``test_ex`` for short). Build and install Gohan, then
+run ``gohan test_extensions <paths to files/directories to test>``. The
+framework will walk through files and recursively through directories, running
+tests in files named ``test_*.js``.
 
 Test file contents
 ^^^^^^^^^^^^^^^^^^
