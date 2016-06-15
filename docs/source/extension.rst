@@ -488,6 +488,11 @@ run ``gohan test_extensions <paths to files/directories to test>``. The
 framework will walk through files and recursively through directories, running
 tests in files named ``test_*.js``.
 
+By default, the framework doesn't show logs and results for passing tests, so
+you won't see any output if all the tests pass. If you pass a
+``-v``/``--verbose`` flag, it will show these messages, and an additional ``All
+tests have passed.`` message if all the tests pass.
+
 Test file contents
 ^^^^^^^^^^^^^^^^^^
 Each test file must specify schema and path for preloading extensions:
