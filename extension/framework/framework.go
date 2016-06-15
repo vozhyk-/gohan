@@ -51,7 +51,7 @@ func RunTests(testFiles []string, printAllLogs bool) (returnCode int) {
 	}
 
 	summary := makeSummary(errors)
-	printSummary(summary)
+	printSummary(summary, printAllLogs)
 
 	for _, err := range summary {
 		if err != nil {
@@ -83,15 +83,25 @@ func makeSummary(errors map[string]map[string]error) (summary map[string]error) 
 	return
 }
 
-func printSummary(summary map[string]error) {
+func printSummary(summary map[string]error, printAllLogs bool) {
 	allPassed := true
 
-	log.Info("Run %d test files:", len(summary))
+	if !printAllLogs {
+		buflog.Buf().Activate()
+		defer func() {
+			if !allPassed {
+				buflog.Buf().PrintLogs()
+			}
+			buflog.Buf().Deactivate()
+		}()
+	}
+
+	log.Info("Run %d test files.", len(summary))
 	for testFile, err := range summary {
 		if err != nil {
 			log.Error(fmt.Sprintf("\tFAIL\t%s: %s", testFile, err.Error()))
 			allPassed = false
-		} else {
+		} else if printAllLogs {
 			log.Notice("\tOK\t%s", testFile)
 		}
 	}
