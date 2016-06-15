@@ -93,16 +93,11 @@ func getTestFiles(args cli.Args) []string {
 				return nil
 			}
 
-			fullPath, err := filepath.Abs(filePath)
-			if err != nil {
-				log.Error(fmt.Sprintf("Failed to traverse file '%s': %s", fullPath, err.Error()))
-				return nil
-			}
-			fullPath = filepath.Clean(fullPath)
+			filePath = filepath.Clean(filePath)
 
-			if !seen[fullPath] {
-				testFiles = append(testFiles, fullPath)
-				seen[fullPath] = true
+			if !seen[filePath] {
+				testFiles = append(testFiles, filePath)
+				seen[filePath] = true
 			}
 
 			return nil
