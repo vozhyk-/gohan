@@ -34,10 +34,6 @@ const (
 	GeneralError = ""
 )
 
-type metaError struct {
-	error
-}
-
 // TestRunner abstracts running extension tests from a single file
 type TestRunner struct {
 	testFileName string
@@ -45,6 +41,13 @@ type TestRunner struct {
 
 	setUp    bool
 	tearDown bool
+}
+
+// TestRunnerErrors map[testFunction]error
+type TestRunnerErrors map[string]error
+
+type metaError struct {
+	error
 }
 
 var setUpPattern = regexp.MustCompile("^setUp$")
@@ -60,19 +63,15 @@ func NewTestRunner(testFileName string, printAllLogs bool) *TestRunner {
 }
 
 // Run performs extension tests from the file specified at runner's creation
-func (runner *TestRunner) Run() map[string]error {
+func (runner *TestRunner) Run() TestRunnerErrors {
 	src, err := ioutil.ReadFile(runner.testFileName)
 	if err != nil {
-		return map[string]error{
-			GeneralError: fmt.Errorf("Failed to read file '%s': %s", runner.testFileName, err.Error()),
-		}
+		return generalError(fmt.Errorf("Failed to read file '%s': %s", runner.testFileName, err.Error()))
 	}
 
 	program, err := parser.ParseFile(nil, runner.testFileName, src, 0)
 	if err != nil {
-		return map[string]error{
-			GeneralError: fmt.Errorf("Failed to parse file '%s': %s", runner.testFileName, err.Error()),
-		}
+		return generalError(fmt.Errorf("Failed to parse file '%s': %s", runner.testFileName, err.Error()))
 	}
 	tests := []string{}
 	for _, declaration := range program.DeclarationList {
@@ -93,26 +92,28 @@ func (runner *TestRunner) Run() map[string]error {
 
 	directory, _ := os.Getwd()
 	if err := os.Chdir(filepath.Dir(runner.testFileName)); err != nil {
-		return map[string]error{
-			GeneralError: fmt.Errorf("Failed to change directory to '%s': %s",
-				filepath.Dir(runner.testFileName),
-				err.Error()),
-		}
+		return generalError(fmt.Errorf("Failed to change directory to '%s': %s",
+			filepath.Dir(runner.testFileName),
+			err.Error()))
 	}
 	defer os.Chdir(directory)
 
-	errors := map[string]error{}
+	errors := TestRunnerErrors{}
 	for _, test := range tests {
 		errors[test] = runner.runTest(test, env)
 
 		if _, ok := errors[test].(metaError); ok {
-			return map[string]error{
-				GeneralError: errors[test],
-			}
+			return generalError(errors[test])
 		}
 	}
 
 	return errors
+}
+
+func generalError(err error) TestRunnerErrors {
+	return TestRunnerErrors{
+		GeneralError: err,
+	}
 }
 
 func (runner *TestRunner) runTest(testName string, env *Environment) (err error) {

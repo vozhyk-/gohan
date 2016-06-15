@@ -326,7 +326,7 @@ documentation for detail information about writing tests.`,
 		Flags: []cli.Flag{
 			cli.BoolFlag{Name: "verbose, v", Usage: "Print logs for passing tests"},
 		},
-		Action: framework.RunTests,
+		Action: framework.TestExtensions,
 	}
 }
 
